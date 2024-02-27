@@ -145,7 +145,9 @@ export class Tab1Page implements OnInit {
     //Controlará que se hayan creado todas las imagenes antes de crear el PDF. En caso contrario imprimiría un pdf por cada sección.
     let contSections = 0;
     //Definimos de que height queremos que empiece a dibujar nuestro PDF.
-    let currentPageHeight = 0;
+    let headerHeight = 55; //Altura del padding que le hemos dado al header
+    let footerHeight = 10; //Altura del padding que le hemos dado al footer
+    let currentPageHeight = headerHeight+footerHeight;
 
     while (currentSectionIndex < totalSections) {
       const section = sections[currentSectionIndex];
@@ -158,7 +160,7 @@ export class Tab1Page implements OnInit {
         const height = canvas.height * (width / canvas.width);
         if (currentPageHeight + height >= doc.internal.pageSize.getHeight()) {
           doc.addPage();
-          currentPageHeight = 0;
+          currentPageHeight = headerHeight+footerHeight;
           //currentPageHeight = headerHeight + footerHeight;
           //this.addPageConfig(doc);
         }
@@ -168,12 +170,37 @@ export class Tab1Page implements OnInit {
         contSections++;
         if (contSections === totalSections) {
           //Al final asignamos el header y footer a todas las páginas
-          //this.addPageConfig(doc);
+          this.addPageConfig(doc);
           doc.save('dashboard.pdf');
         }
       });
       //Sumamos 1, para que el bucle realice todas las peticiones, una por cada sección
       currentSectionIndex++;
+    }
+  }
+
+  addPageConfig(doc:jsPDF) {
+    for (let i = 1; i <= doc.getNumberOfPages(); i++) {
+      // Añadimos la págin
+      doc.setPage(i);
+      // Añadimos el logotipo, sus valores y posición
+      const imagen = "/assets/icon/favicon.png";
+      const imgWidth = 45; // Ancho de la imagen
+      const imgHeight = 45; // Alto de la imagen
+      const imgX = 5; // Posición X de la imagen
+      const imgY = 5; // Posición Y de la imagen
+      doc.addImage(imagen, "JPG", imgX, imgY, imgWidth, imgHeight);
+      // Le asignamos un tamaño a las letras
+      doc.setFontSize(10);
+      doc.line(0, 55, doc.internal.pageSize.width, 55);
+      // Añadimos información de la empresa
+      const nombreEmpresa = "Nombre de la Empresa";
+      const telefono = "Teléfono: 123-456-789";
+      const direccion = "Dirección: Calle Principal, 123";
+      const texto = nombreEmpresa+'\n'+telefono+'\n'+direccion;
+      doc.text(texto, doc.internal.pageSize.width - 120, 10, {baseline:'bottom'});
+      // Añadimos la paginación
+      doc.text("Página "+i, doc.internal.pageSize.width - 100, doc.internal.pageSize.height - 10, {baseline:'bottom'});
     }
   }
 }
