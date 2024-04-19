@@ -9,7 +9,7 @@ import { RespuestaNoticias } from '../interfaces/interfaces';
 })
 export class GestionApiService {
 
-  apiKey: string = environment.apiKey;
+  apiKey: string = '6c0dcd88f6714d90a3501ded1d094800';
   apiUrl: string = environment.apiUrl;
 
   //Hacemos uso de BehaviorSubject tipo json (categoria y totalResults o undefined).

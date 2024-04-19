@@ -26,6 +26,11 @@ export class BarChartComponent implements OnInit {
   //Se ejecutará la primera vez que se cargue la página y cuando se cambia de segmentos. Esto es así, porque el gráfico se destruye al cambiar de segmentos y se crea nuevamente.
   ngOnInit(): void {
     console.log("Ejecuta bar-chart");
+    //Mediante el array de categorias, llamamos a la API una vez por cada categoría.
+    this.nombresCategorias.forEach(categoria => {
+      this.gestionServiceApi.cargarCategoria(categoria);
+    });
+    
     // Inicializa el gráfico
     this.inicializarChart();
 

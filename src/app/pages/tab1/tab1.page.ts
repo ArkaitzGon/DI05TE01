@@ -10,6 +10,36 @@ import html2canvas from 'html2canvas';
   styleUrls: ['./tab1.page.scss'],
 })
 export class Tab1Page implements OnInit {
+  // Preuba api barchar
+  categorias: string[] = [
+    "business",
+    "entertainment",
+    "general",
+    "technology",
+    "health",
+    "science",
+    "sports"
+  ];
+
+  backgroundColorCat: string[] = [
+    'rgba(255, 99, 132, 0.2)',
+    'rgba(255, 159, 64, 0.2)',
+    'rgba(255, 205, 86, 0.2)',
+    'rgba(75, 192, 192, 0.2)',
+    'rgba(54, 162, 235, 0.2)',
+    'rgba(153, 102, 255, 0.2)',
+    'rgba(201, 203, 207, 0.2)'
+  ];
+
+  borderColorCat: string[] =[
+    'rgb(255, 99, 132)',
+    'rgb(255, 159, 64)',
+    'rgb(255, 205, 86)',
+    'rgb(75, 192, 192)',
+    'rgb(54, 162, 235)',
+    'rgb(153, 102, 255)',
+    'rgb(201, 203, 207)'
+  ];
 
   datosTablaTab1 = [
     { nombre: 'Juan', apellido: 'garcia', pais: "españa", edad: 30 },
@@ -120,17 +150,13 @@ export class Tab1Page implements OnInit {
 
   generarPDF() {
     //Ancho en px de A4
-    const anchoMax = 794 //794px; //210mm
+    const anchoMax = 794 
     //Alto en px de A4
-    const altoMax = 1123;//1123px; //297mm
-    //Ancho en px de A3
-    //const anchoMax = 1587; //420mm
-    //Alto en px de A3
-    //const altoMax = 1123; //297mm
+    const altoMax = 1123;
+
     const doc = new jsPDF({
-      orientation: 'portrait', //Orientación normal
-      unit: 'px', //En este caso como unidades utilizamos px, pero podríamos poner cm,mm,em,pt,...
-      //mm -> [210, 297] para A4
+      orientation: 'portrait', 
+      unit: 'px', 
       format: [anchoMax,altoMax]
     });
     
@@ -145,8 +171,8 @@ export class Tab1Page implements OnInit {
     //Controlará que se hayan creado todas las imagenes antes de crear el PDF. En caso contrario imprimiría un pdf por cada sección.
     let contSections = 0;
     //Definimos de que height queremos que empiece a dibujar nuestro PDF.
-    let headerHeight = 55; //Altura del padding que le hemos dado al header
-    let footerHeight = 10; //Altura del padding que le hemos dado al footer
+    let headerHeight = 50; 
+    let footerHeight = 10; 
     let currentPageHeight = headerHeight+footerHeight;
 
     while (currentSectionIndex < totalSections) {
@@ -158,11 +184,10 @@ export class Tab1Page implements OnInit {
          *Esto se hace para que la imagen mantenga dimensiones proporcionales según el width de la página.
          */
         const height = canvas.height * (width / canvas.width);
-        if (currentPageHeight + height >= doc.internal.pageSize.getHeight()) {
+        // Controlamos el tamaño de la pagina quitandole el tamaño del header y el footer
+        if (currentPageHeight + height + footerHeight>= doc.internal.pageSize.getHeight()) {
           doc.addPage();
           currentPageHeight = headerHeight+footerHeight;
-          //currentPageHeight = headerHeight + footerHeight;
-          //this.addPageConfig(doc);
         }
         //this.addPageConfig(doc);
         doc.addImage(imageData, 'JPG', 0, currentPageHeight, width, height);
@@ -181,26 +206,56 @@ export class Tab1Page implements OnInit {
 
   addPageConfig(doc:jsPDF) {
     for (let i = 1; i <= doc.getNumberOfPages(); i++) {
-      // Añadimos la págin
+      // Añadimos la página
       doc.setPage(i);
+      // Añadimos el rectángulo de fondo del header
+      const headerX = 3; 
+      const headerY = 3; 
+      const headerWidth = doc.internal.pageSize.width - 2 * headerX; 
+      const headerHeight = 50; 
+      doc.setFillColor('#CCCCCC');
+      doc.rect(headerX, headerY, headerWidth, headerHeight, 'F');
+  
       // Añadimos el logotipo, sus valores y posición
       const imagen = "/assets/icon/favicon.png";
-      const imgWidth = 45; // Ancho de la imagen
-      const imgHeight = 45; // Alto de la imagen
-      const imgX = 5; // Posición X de la imagen
-      const imgY = 5; // Posición Y de la imagen
+      const imgWidth = 45; 
+      const imgHeight = 45; 
+      const imgX = headerX + (headerWidth - imgWidth) / 2; 
+      const imgY = (headerHeight - imgHeight) / 2 + headerX;
       doc.addImage(imagen, "JPG", imgX, imgY, imgWidth, imgHeight);
+  
       // Le asignamos un tamaño a las letras
       doc.setFontSize(10);
       doc.line(0, 55, doc.internal.pageSize.width, 55);
+  
       // Añadimos información de la empresa
       const nombreEmpresa = "Nombre de la Empresa";
       const telefono = "Teléfono: 123-456-789";
       const direccion = "Dirección: Calle Principal, 123";
       const texto = nombreEmpresa+'\n'+telefono+'\n'+direccion;
-      doc.text(texto, doc.internal.pageSize.width - 120, 10, {baseline:'bottom'});
+      doc.text(texto, 10, 20, {baseline:'bottom'});
+  
       // Añadimos la paginación
-      doc.text("Página "+i, doc.internal.pageSize.width - 100, doc.internal.pageSize.height - 10, {baseline:'bottom'});
+      const totalPages = doc.getNumberOfPages(); 
+      const text = "Página " + i + " de " + totalPages;
+      const textWidth = doc.getStringUnitWidth(text) * doc.getFontSize(); 
+      const textX = headerX + (headerWidth - textWidth) / 2; 
+      
+      // Añadimos el rectángulo alrededor del texto del pie de página
+      const footerHeight = 10;
+      const footerRectX = 10; 
+      const footerRectY = doc.internal.pageSize.height - footerHeight -10; 
+      const footerWidth = doc.internal.pageSize.width - 2 * 10;
+
+      doc.setFillColor('#CCCCCC');
+      doc.rect(footerRectX, footerRectY, footerWidth, footerHeight, 'F');
+
+      // Añadimos el texto del pie de página después de dibujar el rectángulo
+      const textY = footerRectY + footerHeight / 2; 
+      doc.setFillColor('black');
+      doc.text(text, textX, textY, {baseline:'middle'});   
     }
   }
+
+  
 }
